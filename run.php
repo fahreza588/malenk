@@ -133,6 +133,8 @@ foreach($content as $format) {
                 file_put_contents($readConfig['result_dir']."/unknown_not_supported.txt", trim($format).PHP_EOL, FILE_APPEND);
             } else if(json_decode($check,1)['decline_code'] == 'insufficient_funds') {
                 file_put_contents($readConfig['result_dir']."/die_no_balance.txt", trim($format).PHP_EOL, FILE_APPEND);
+            else if(json_decode($check,1)['decline_code'] == 'fraudulent') {
+                file_put_contents($readConfig['result_dir']."/fraud.txt", trim($format).PHP_EOL, FILE_APPEND);
             } else if(json_decode($check,1)['message'] == "Invalid object") {
                 goto checking;
             } else {
