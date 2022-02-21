@@ -12,7 +12,7 @@
 date_default_timezone_set("Asia/Jakarta");
 $colors = new \Colors();
 if(!file_exists("config.json")) {
-    file_put_contents("config.json", json_encode(['key' => 'YourKey', 'type_check' => 'charge', 'result_dir' => 'RESULT']));
+    file_put_contents("config.json", json_encode(['key' => 'YOUR KEY', 'type_check' => 'charge', 'result_dir' => 'RESULT']));
 }
 
 // Getting latest Versions
@@ -131,10 +131,6 @@ foreach($content as $format) {
         } else {
             if(@json_decode($check, 1)['decline_code'] == 'transaction_not_allowed') {
                 file_put_contents($readConfig['result_dir']."/unknown_not_supported.txt", trim($format).PHP_EOL, FILE_APPEND);
-            } else if(json_decode($check,1)['decline_code'] == 'insufficient_funds') {
-                file_put_contents($readConfig['result_dir']."/die_no_balance.txt", trim($format).PHP_EOL, FILE_APPEND);
-            else if(json_decode($check,1)['decline_code'] == 'fraudulent') {
-                file_put_contents($readConfig['result_dir']."/fraud.txt", trim($format).PHP_EOL, FILE_APPEND);
             } else if(json_decode($check,1)['message'] == "Invalid object") {
                 goto checking;
             } else {
