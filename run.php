@@ -1,6 +1,6 @@
 <?php
 /**
- * Malenk.io Perfect Checker
+ * malenk.pro Perfect Checker
  * @version : 1.0
  * @author  : Malenk.pro
  * Have two type_check. charge 1$ (USD) and no charge version!
@@ -16,7 +16,7 @@ if(!file_exists("config.json")) {
 }
 
 if(!file_exists("alerts.txt")) {
-    echo "Hello! Welcome to Malenk.io Checker! Please Update your config before run this source code!".PHP_EOL;
+    echo "Hello! Welcome to malenk.pro Checker! Please Update your config before run this source code!".PHP_EOL;
     echo "Are you updated this config.json (y/N) ";
     $updated = trim(fgets(STDIN));
     if(strtolower($updated) == "y") {
