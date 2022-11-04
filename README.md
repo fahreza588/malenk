@@ -7,7 +7,7 @@ $ [Information Tools](#INFORMATION-TOOLS)
 ## Tutorial on PC/LAPTOP [OS]
 	# Download & Install Git for Windows (32/64bit)
 	# Download & Install XAMPP for Windows and Start Apache
-	# Download File toolsig ([http://marketingproject.my.id/CLI]) & Extract the file
+	# Download File malenk pro ([http://marketingproject.my.id/CLI]) & Extract the file
 	# Change your key and type (gate1 or nocharge) on file config.json
 	# Create file list.txt and put your list on this file
 	# Right Click (Mouse/Touchpad) In "malenk-main" Folder & Choose Git Bash Here!
