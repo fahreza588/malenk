@@ -92,8 +92,8 @@ foreach($content as $format) {
     if(isJson($check)) {
         if(json_decode($check,1)['status'] == "LIVE") {
             echo "[".date("H:i:s")." ".$lineNow." / ".count($content)."] ".trim($format)." => ".json_decode($check,1)['bin_info']." [".$colors->getColoredString("LIVE", "white", "green")."] [CREDIT : ".$colors->getColoredString(json_decode($check,1)['credit'], "white", "green")."] [Check Type : ".json_decode($check,1)['check_type']."]".PHP_EOL;
-            file_put_contents($readConfig['result_dir']."/liveajg.txt", trim($format)." | ".json_decode($check,1)['bin_info']."".PHP_EOL, FILE_APPEND);
-			file_put_contents($readConfig['result_dir']."/liveeee.txt", trim($format)."".PHP_EOL, FILE_APPEND);
+            file_put_contents($readConfig['result_dir']."/live.txt", trim($format)." | ".json_decode($check,1)['bin_info']."".PHP_EOL, FILE_APPEND);
+			file_put_contents($readConfig['result_dir']."/livenoinfobin.txt", trim($format)."".PHP_EOL, FILE_APPEND);
             sleep(3);
         } else if(json_decode($check,1)['status'] == "UNKNOWN") {
             $addMsg = "";
