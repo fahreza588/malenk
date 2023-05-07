@@ -33,7 +33,7 @@ if(!is_dir($readConfig['result_dir'])) {
 
 $i=0;
 do {
-    $isValidKeys = curl("https://malenk.click/apii/?version=1.0", json_encode(['type' => 'validate_userkey', 'data' => ['userkey' => $readConfig['userkey'] ]]));
+    $isValidKeys = curl("https://malenk.click/api/?version=1.0", json_encode(['type' => 'validate_userkey', 'data' => ['userkey' => $readConfig['userkey'] ]]));
     if(isJson($isValidKeys)) {
         if(json_decode($isValidKeys, true)['error'] == false) {
             echo "[-] Key is ".$colors->getColoredString("VALID").PHP_EOL;
